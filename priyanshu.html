@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopEasy - Full E-Commerce Project</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family: 'Segoe UI', Arial}
+body{background:#eaeded}
+.navbar{background:#131921;color:white;display:flex;align-items:center;justify-content:space-between;padding:10px 15px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.logo{font-size:24px;font-weight:bold;color:#febd69}
+.logo span{color:white}
+.nav-right{display:flex;align-items:center;gap:8px;margin-top:5px}
+.nav-right button{background:#febd69;border:none;padding:8px 14px;border-radius:4px;font-weight:bold;cursor:pointer}
+.nav-right button:hover{background:#f3a847}
+.user-text{font-size:12px;color:#ccc}
+.banner{background:linear-gradient(90deg, #ff9900 0%, #ff6a00 100%);color:white;padding:25px 15px;text-align:center}
+.banner h1{font-size:26px}
+.banner p{margin-top:5px}
+.container{max-width:1200px;margin:20px auto;padding:0 10px}
+.products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:768px){.products{grid-template-columns:repeat(3,1fr)}.banner h1{font-size:32px}}
+.card{background:white;border-radius:8px;padding:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1);display:flex;flex-direction:column;transition:0.2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 5px 15px rgba(0,0,0,0.2)}
+.card.icon-box{font-size:70px;text-align:center;background:#f7f7f7;border-radius:8px;padding:15px 0;margin-bottom:10px}
+.card h3{font-size:16px;margin:5px 0}
+.rating{color:#ff9900;font-size:13px}
+.price-box{margin:8px 0}
+.price{color:#B12704;font-weight:bold;font-size:20px}
+.mrp{font-size:12px;color:#565959;text-decoration:line-through;margin-left:5px}
+.stock{font-size:12px;color:#007600;font-weight:bold}
+.btn-cart{background:#ffd814!important;border:1px solid #fcd200!important;width:100%;margin-top:10px;padding:10px!important;border-radius:20px!important}
+.btn-buy{background:#ff9900!important;border:none!important;width:100%;margin-top:6px;padding:10px!important;border-radius:20px!important;color:white!important}
+.btn-del{background:#ff4444!important;color:white!important;width:100%;margin-top:6px}
+.page-box{background:white;max-width:800px;margin:20px auto;padding:20px;border-radius:10px;box-shadow:0 2px 10px #0002}
+.login-box{max-width:400px;margin:40px auto;background:white;padding:25px;border-radius:10px;box-shadow:0 4px 20px #0002;text-align:center}
+input,select{width:100%;padding:12px;margin:7px 0;border:1px solid #888;border-radius:8px}
+.admin-panel{background:#fff3cd;border:2px dashed #ff9900;padding:15px;border-radius:10px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:14px}
+th{background:#131921;color:white}
+.footer{text-align:center;padding:20px;color:#555;font-size:13px;margin-top:30px}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+<div class="logo">🛒 ShopEasy<span>.in</span></div>
+<div class="nav-right">
+<div class="user-text" id="userInfo"></div>
+<button onclick="renderHome()">Home</button>
+<button onclick="showCart()">Cart (<span id="cartCount">0</span>)</button>
+<button onclick="showLogin()" id="loginBtn">Login</button>
+<button onclick="logout()">Logout</button>
+</div>
+</div>
+
+<div id="main"></div>
+
+<div class="footer">
+<p>© 2025 ShopEasy | Project for College Exhibition | Made by Student</p>
+<p>Technology Used: HTML5, CSS3, JavaScript, LocalStorage (No XAMPP/PHP/MySQL Needed)</p>
+</div>
+
+<script>
+// ================= DATABASE =================
+var users = [
+{email:"admin@shop.com", pass:"admin123", name:"Admin Sir", role:"admin"},
+{email:"user@shop.com", pass:"user123", name:"Rahul Student", role:"user"},
+{email:"faculty@shop.com", pass:"faculty123", name:"Faculty", role:"user"}
+];
+var products = [
+{id:1, name:"Wireless Bluetooth Headphone", price:1499, mrp:2999, rating:"★★★★☆ 4.3 (12,451)", stock:"In Stock - 20 left", icon:"🎧", desc:"Noise Cancellation, 40hr Battery"},
+{id:2, name:"Smart Watch Series 7", price:2499, mrp:4999, rating:"★★★★☆ 4.2 (8,203)", stock:"In Stock", icon:"⌚", desc:"Heart Rate, Step Counter, AMOLED"},
+{id:3, name:"Men's Running Shoes", price:1999, mrp:3499, rating:"★★★★☆ 4.4 (6,102)", stock:"Only 5 left", icon:"👟", desc:"Breathable Mesh, Lightweight"},
+{id:4, name:"Travel Backpack 35L", price:899, mrp:1499, rating:"★★★★★ 4.0 (3,415)", stock:"In Stock - 25 left", icon:"🎒", desc:"Waterproof, Laptop Compartment"},
+{id:5, name:"Canon DSLR Camera 1500D", price:45999, mrp:59999, rating:"★★★★★ 4.5 (2,101)", stock:"In Stock - 2 left", icon:"📷", desc:"24.1MP, 4K Video, WiFi"},
+{id:6, name:"Aluminium Laptop Stand", price:799, mrp:1499, rating:"★★★★☆ 4.3 (1,987)", stock:"In Stock", icon:"💻", desc:"Adjustable Height, Foldable"},
+{id:7, name:"Power Bank 20000mAh", price:1299, mrp:2199, rating:"★★★★☆ 4.1 (9,120)", stock:"In Stock", icon:"🔋", desc:"Fast Charging, Dual USB"},
+{id:8, name:"Gaming Mouse RGB", price:599, mrp:1299, rating:"★★★★☆ 4.0 (4,555)", stock:"In Stock", icon:"🖱️", desc:"6 Buttons, 7200 DPI"}
+];
+var cart = [];
+var currentUser = null;
+
+// ================= FUNCTIONS =================
+function saveData(){ /* using memory only for simplicity */ updateHeader(); }
+function updateHeader(){
+document.getElementById('cartCount').innerText = cart.length;
+document.getElementById('userInfo').innerText = currentUser? "Hello, "+currentUser.name : "";
+document.getElementById('loginBtn').innerText = currentUser? currentUser.name : "Login";
+}
+
+function renderHome(){
+var html = '';
+html += '<div class="banner"><h1>Great Indian Festival Sale Live! Upto 70% Off</h1><p>Deals on Electronics, Fashion, Home & More - Ends 15 Oct | Free Delivery</p></div>';
+html += '<div class="container">';
+if(currentUser && currentUser.role=="admin"){
+html += '<div class="admin-panel"><h3>🔧 Admin Panel - Add New Product (Teacher ko dikhana)</h3><input id="pname" placeholder="Product Name ex: Keyboard"><input id="pprice" type="number" placeholder="Price ex: 999"><input id="pmrp" type="number" placeholder="MRP ex: 1999"><input id="picon" placeholder="Emoji Icon ex: ⌨️"><button onclick="addProduct()" style="background:#131921;color:white;padding:10px 20px;border:none;border-radius:6px;margin-top:10px">+ Add Product to Website</button><p style="font-size:12px;margin-top:5px">Ye product turant website pe add ho jayega</p></div>';
+}
+html += '<h2 style="margin-bottom:12px">Top Deals For You ('+products.length+' Products)</h2>';
+html += '<div class="products">';
+for(var i=0;i<products.length;i++){
+var p = products[i];
+html += '<div class="card"><div class="icon-box">'+p.icon+'</div><h3>'+p.name+'</h3><div class="rating">'+p.rating+'</div><p style="font-size:12px;color:#555">'+p.desc+'</p><div class="price-box"><span class="price">₹'+p.price+'</span><span class="mrp">₹'+p.mrp+'</span><br><span class="stock">'+p.stock+'</span></div><button class="btn-cart" onclick="addToCart('+p.id+')">Add to Cart</button><button class="btn-buy" onclick="buyNow('+p.id+')">Buy Now</button>'+ (currentUser && currentUser.role=="admin"? '<button class="btn-del" onclick="deleteProduct('+p.id+')">Delete Product</button>' : '') +'</div>';
+}
+html += '</div></div>';
+document.getElementById('main').innerHTML = html;
+updateHeader();
+}
+
+function addToCart(id){
+if(!currentUser){alert("Bhai pehle Login kar! \nuser@shop.com / user123"); showLogin(); return;}
+var prod = null; for(var i=0;i<products.length;i++){if(products[i].id==id) prod=products[i];}
+cart.push(prod);
+alert(prod.name + " Cart me add ho gaya!");
+updateHeader();
+}
+function buyNow(id){
+addToCart(id);
+showCart();
+}
+function showCart(){
+var total=0; var mrpTotal=0;
+for(var i=0;i<cart.length;i++){total+=cart[i].price; mrpTotal+=cart[i].mrp;}
+var html='<div class="page-box"><h2>🛒 Shopping Cart - '+cart.length+' items</h2>';
+if(cart.length==0){html+='<p style="padding:20px;text-align:center">Cart is Empty <br><br><button onclick="renderHome()" style="padding:10px 20px;background:#ff9900;border:none;border-radius:6px">Continue Shopping</button></p>';}
+else{
+html+='<table><tr><th>#</th><th>Product</th><th>Price</th><th>Action</th></tr>';
+for(var i=0;i<cart.length;i++){html+='<tr><td>'+(i+1)+'</td><td>'+cart[i].icon+' '+cart[i].name+'</td><td>₹'+cart[i].price+'</td><td><button onclick="removeItem('+i+')">Remove</button></td></tr>';}
+html+='</table><br><h3>Subtotal ('+cart.length+' items): <span style="color:#B12704">₹'+total+'</span></h3><p style="font-size:13px">You Saved: ₹'+(mrpTotal-total)+' on MRP</p><br><button onclick="checkout()" style="background:#ffd814;padding:14px 30px;border:none;border-radius:8px;font-weight:bold;width:100%;font-size:16px">Proceed to Buy (Cash on Delivery)</button><br><br><button onclick="renderHome()">Continue Shopping</button>';
+}
+html+='</div>';
+document.getElementById('main').innerHTML=html;
+}
+function removeItem(index){cart.splice(index,1); showCart(); updateHeader();}
+function checkout(){alert("✅ Order Placed Successfully!\n\nTotal Amount: ₹"+cart.reduce((a,b)=>a+b.price,0)+"\nDelivery in 2 Days\n\n[This is Frontend Only Project - For backend we can use PHP/MySQL]"); cart=[]; renderHome();}
+function showLogin(){
+document.getElementById('main').innerHTML='<div class="login-box"><h2>ShopEasy Login</h2><p style="font-size:13px;color:#555;margin:10px 0">College Project Login</p><input id="email" placeholder="Email - user@shop.com"><input id="pass" type="password" placeholder="Password - user123"><button onclick="login()" style="width:100%;background:#ff9900;padding:12px;border:none;border-radius:8px;font-weight:bold;margin-top:10px">Login</button><div style="background:#f0f0f0;padding:10px;margin-top:15px;border-radius:6px;text-align:left;font-size:13px"><b>Test Accounts:</b><br>👤 User: user@shop.com / user123<br>👨‍💼 Admin: admin@shop.com / admin123<br>👨‍🏫 Faculty: faculty@shop.com / faculty123</div><br><button onclick="renderHome()">Back to Home</button></div>';
+}
+function login(){
+var e=document.getElementById('email').value.trim();
+var p=document.getElementById('pass').value.trim();
+var found=null;
+for(var i=0;i<users.length;i++){if(users[i].email==e && users[i].pass==p) found=users[i];}
+if(found){currentUser=found; alert("Welcome "+found.name+"!"); renderHome();}
+else alert("Wrong Email/Password! Use:\nuser@shop.com / user123");
+}
+function logout(){currentUser=null; cart=[]; renderHome(); alert("Logged Out");}
+function addProduct(){
+var name=document.getElementById('pname').value;
+var price=parseInt(document.getElementById('pprice').value);
+var mrp=parseInt(document.getElementById('pmrp').value) || price+500;
+var icon=document.getElementById('picon').value || "📦";
+if(!name ||!price){alert("Name aur Price bharo"); return;}
+products.push({id:Date.now(), name:name, price:price, mrp:mrp, rating:"★★★★☆ 4.0 (New)", stock:"In Stock", icon:icon, desc:"Newly Added by Admin"});
+renderHome();
+alert("Product Added!");
+}
+function deleteProduct(id){
+var newList=[];
+for(var i=0;i<products.length;i++){if(products[i].id!=id) newList.push(products[i]);}
+products=newList;
+renderHome();
+}
+
+// First Load
+renderHome();
+</script>
+</body>
+</html>
